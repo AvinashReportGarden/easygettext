@@ -3,6 +3,7 @@
 /* eslint no-console:0 */
 
 const fs = require('fs');
+const path = require('path');
 const minimist = require('minimist');
 
 const constants = require('./constants.js');
@@ -14,7 +15,7 @@ const ALLOWED_EXTENSIONS_EXCEPTIONS = ['.d.ts'];
 
 // Process arguments
 const argv = minimist(process.argv.slice(2));
-const files = argv._.sort() || [];
+let files = argv._.sort() || [];
 const quietMode = argv.quiet || false;
 const outputFile = argv.output || null;
 const startDelimiter = argv.startDelimiter === undefined ? constants.DEFAULT_DELIMITERS.start : argv.startDelimiter;
@@ -25,6 +26,28 @@ const extraFilter = argv.filter || false;
 const removeHTMLWhitespaces = argv.removeHTMLWhitespaces || false;
 const filterPrefix = argv.filterPrefix || constants.DEFAULT_FILTER_PREFIX;
 const jsParser = argv.parser || 'auto';
+const directory = argv.inputDirectory || '';
+
+function findFiles(folderPath) {
+  let allFiles = fs.readdirSync(folderPath);
+  let result = [];
+
+  allFiles.forEach(
+    function(file) {
+      const newbase = path.join(folderPath, file);
+      if ( fs.statSync(newbase).isDirectory() ) {
+        result = result.concat(findFiles(newbase));
+      } else {
+        result.push(newbase);
+      }
+    },
+  );
+  return result;
+}
+
+if (directory.length > 0) {
+  files = findFiles(directory);
+}
 
 if (!quietMode && (!files || files.length === 0)) {
   console.log('Usage:\n\tgettext-extract [--attribute EXTRA-ATTRIBUTE] [--filterPrefix FILTER-PREFIX] [--output OUTFILE] [--parser auto|acorn|babel] <FILES>');
