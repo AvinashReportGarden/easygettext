@@ -37,3 +37,6 @@ exports.ATTRIBUTE_CONTEXT = 'context';
 exports.ATTRIBUTE_PLURAL = 'plural';
 
 exports.MARKER_NO_CONTEXT = '__NOCONTEXT__';
+
+exports.ALLOWED_EXTENSIONS = ['html', 'htm', 'jade', 'js', 'pug', 'vue', 'ts'];
+exports.ALLOWED_EXTENSIONS_EXCEPTIONS = ['.d.ts'];

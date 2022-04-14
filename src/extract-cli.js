@@ -8,10 +8,9 @@ const minimist = require('minimist');
 
 const constants = require('./constants.js');
 const extract = require('./extract.js');
+const utils = require('./utils.js');
 
 const PROGRAM_NAME = constants.PROGRAM_NAME;
-const ALLOWED_EXTENSIONS = ['html', 'htm', 'jade', 'js', 'pug', 'vue', 'ts'];
-const ALLOWED_EXTENSIONS_EXCEPTIONS = ['.d.ts'];
 
 // Process arguments
 const argv = minimist(process.argv.slice(2));
@@ -27,30 +26,15 @@ const removeHTMLWhitespaces = argv.removeHTMLWhitespaces || false;
 const filterPrefix = argv.filterPrefix || constants.DEFAULT_FILTER_PREFIX;
 const jsParser = argv.parser || 'auto';
 const directory = argv.inputDirectory || '';
-
-function findFiles(folderPath) {
-  let allFiles = fs.readdirSync(folderPath);
-  let result = [];
-
-  allFiles.forEach(
-    function(file) {
-      const newbase = path.join(folderPath, file);
-      if ( fs.statSync(newbase).isDirectory() ) {
-        result = result.concat(findFiles(newbase));
-      } else {
-        result.push(newbase);
-      }
-    },
-  );
-  return result;
-}
+const extExceptions = argv.extException || false;
+let allowedExtensions = argv.extension || constants.ALLOWED_EXTENSIONS;
 
 if (directory.length > 0) {
-  files = findFiles(directory);
+  files = utils.getFiles(directory);
 }
 
 if (!quietMode && (!files || files.length === 0)) {
-  console.log('Usage:\n\tgettext-extract [--attribute EXTRA-ATTRIBUTE] [--filterPrefix FILTER-PREFIX] [--output OUTFILE] [--parser auto|acorn|babel] <FILES>');
+  console.log('Usage:\n\tgettext-extract [--attribute EXTRA-ATTRIBUTE] [--extension FILE-EXTENSION] [--extException FILTER-OUT-FILE-EXTENSION] [--filterPrefix FILTER-PREFIX] [--output OUTFILE] [--parser auto|acorn|babel] [--inputDirectory DIRECTORY] | <FILES>');
   process.exit(1);
 }
 
@@ -68,6 +52,8 @@ function _getExtraNames(extraEntities, defaultEntities) {
 
 const attributes = _getExtraNames(extraAttribute, constants.DEFAULT_ATTRIBUTES);
 const filters = _getExtraNames(extraFilter, constants.DEFAULT_FILTERS);
+const ALLOWED_EXTENSIONS = _getExtraNames(allowedExtensions, []).filter(ext => constants.ALLOWED_EXTENSIONS.includes(ext));
+const ALLOWED_EXTENSIONS_EXCEPTIONS = _getExtraNames(extExceptions, constants.ALLOWED_EXTENSIONS_EXCEPTIONS);
 
 // Extract strings
 const extractor = new extract.Extractor({

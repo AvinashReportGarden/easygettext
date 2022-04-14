@@ -3,17 +3,20 @@
 /* eslint no-console:0 */
 
 const fs = require('fs');
+const path = require('path');
 const compile = require('./compile.js');
+const utils = require('./utils.js');
 const minimist = require('minimist');
 
 
 // Process arguments
 const argv = minimist(process.argv.slice(2));
 const files = argv._.sort() || [];
-const outputFile = argv.output || null;
+const outputFile = argv.outputFile || null;
+const outputDir = argv.outputDir || null;
 
 if (!files) {
-  console.log('Usage:\n\tcompile [--output OUTFILE] <FILES>');
+  console.log('Usage:\n\tcompile [--outputFile OUTFILE] | [--outputDir OUTDIR] <FILES>');
   process.exit(1);
 }
 
@@ -39,9 +42,12 @@ for (let file of files) {
 }
 
 // Output results
-const translationString = JSON.stringify(translationData);
 if (outputFile) {
-  fs.writeFileSync(outputFile, translationString);
+    fs.writeFileSync(outputFile, utils.jsonPretty(translationData));
+} else if (outputDir) {
+    Object.keys(translationData).forEach(lang => {
+      fs.writeFileSync(path.join(outputDir, `${lang}.json`), utils.jsonPretty(translationData[lang]));
+    })
 } else {
-  console.log(translationString);
+  console.log(utils.jsonPretty(translationData));
 }
