@@ -535,7 +535,7 @@ exports.Extractor = class Extractor {
     // If there is no html value for the element, check if any of the attributes has a value and extract it.
     if (!html) {
       this.options.attributes.forEach(attr => {
-        html = node.attr(attr) ? node.attr(attr).toString() : html;
+        html = node.attr(attr) ? node.attr(attr).trim() : html;
         if (attr == 'v-t' || attr == 'v-t.preserve') {
           if (html.startsWith("'") && html.endsWith("'")) {
             html = html.substring(1, html.length - 1);
