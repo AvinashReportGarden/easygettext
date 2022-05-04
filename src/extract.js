@@ -532,7 +532,7 @@ exports.Extractor = class Extractor {
   _getNodeHTML(node) {
     let html = node.html();
 
-    // If there is no html value for the element, check if any of the attributes has a value and extract it.
+    // If there is no html value for the element, grab the value from the allowed attributes.
     if (!html) {
       this.options.attributes.forEach(attr => {
         html = node.attr(attr) ? node.attr(attr).trim() : html;
